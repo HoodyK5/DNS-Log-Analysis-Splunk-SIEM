@@ -1,0 +1,303 @@
+# DNS Log Analysis Queries for Splunk SIEM
+# Project: DNS Log Analysis Using Splunk SIEM
+# Author: Mohammed Thajul Akber
+
+============================================================
+1. View All DNS Query Events
+============================================================
+
+Query:
+index=* "query:"
+
+Use:
+Displays all DNS query events received in Splunk.
+
+Purpose:
+Used to verify DNS logs are successfully forwarded from Ubuntu VM to Splunk.
+
+------------------------------------------------------------
+
+============================================================
+2. Search Logs by File Name
+============================================================
+
+Query:
+query.log
+
+Use:
+Searches events related to query.log file.
+
+Purpose:
+Used to quickly verify whether DNS log file data is indexed.
+
+------------------------------------------------------------
+
+============================================================
+3. Search DNS Logs from Ubuntu Host
+============================================================
+
+Query:
+host="Ubuntu-splunk" "query:"
+
+Use:
+Shows DNS query logs only from Ubuntu VM.
+
+Purpose:
+Useful when multiple hosts send logs to Splunk.
+
+------------------------------------------------------------
+
+============================================================
+4. Search Specific Domain - Google
+============================================================
+
+Query:
+index=* "google.com"
+
+Use:
+Finds all DNS queries for google.com.
+
+Purpose:
+Used to verify generated DNS traffic and domain lookups.
+
+------------------------------------------------------------
+
+============================================================
+5. Search Specific Domain - Facebook
+============================================================
+
+Query:
+index=* "facebook.com"
+
+Use:
+Finds all DNS queries for facebook.com.
+
+Purpose:
+Used to inspect user-generated DNS requests.
+
+------------------------------------------------------------
+
+============================================================
+6. Search Suspicious Domain
+============================================================
+
+Query:
+index=* "maliciousdomain.com"
+
+Use:
+Searches DNS requests for suspicious or test malicious domain.
+
+Purpose:
+Used for threat detection and IOC investigation.
+
+------------------------------------------------------------
+
+============================================================
+7. Top Queried Domains
+============================================================
+
+Query:
+index=* "query:" | rex field=_raw "query:\s(?<domain>[^\s]+)" | top domain
+
+Use:
+Extracts queried domain names and shows most frequent domains.
+
+Purpose:
+Used to identify popular domains and traffic trends.
+
+------------------------------------------------------------
+
+============================================================
+8. Count Queries by Domain
+============================================================
+
+Query:
+index=* "query:" | rex field=_raw "query:\s(?<domain>[^\s]+)" | stats count by domain
+
+Use:
+Counts total DNS requests for each domain.
+
+Purpose:
+Used for volume analysis and anomaly detection.
+
+------------------------------------------------------------
+
+============================================================
+9. Count Queries by Client IP
+============================================================
+
+Query:
+index=* "query:" | rex field=_raw "client\s@\S+\s(?<src_ip>[0-9.]+)#" | stats count by src_ip
+
+Use:
+Extracts source IP and counts requests.
+
+Purpose:
+Used to identify systems generating highest DNS traffic.
+
+------------------------------------------------------------
+
+============================================================
+10. DNS Query Types (A / AAAA)
+============================================================
+
+Query:
+index=* "query:" | rex field=_raw "IN\s(?<record_type>A|AAAA)" | stats count by record_type
+
+Use:
+Shows query type counts.
+
+Purpose:
+Used to analyze IPv4 (A) and IPv6 (AAAA) DNS requests.
+
+------------------------------------------------------------
+
+============================================================
+11. Timeline of DNS Queries
+============================================================
+
+Query:
+index=* "query:" | timechart count
+
+Use:
+Displays DNS activity over time.
+
+Purpose:
+Used to detect spikes or unusual traffic bursts.
+
+------------------------------------------------------------
+
+============================================================
+12. Top Domains with Percentage
+============================================================
+
+Query:
+index=* "query:" | rex field=_raw "query:\s(?<domain>[^\s]+)" | top limit=10 domain
+
+Use:
+Shows top 10 queried domains with percentages.
+
+Purpose:
+Used in dashboards and reports.
+
+------------------------------------------------------------
+
+============================================================
+13. Search Failed DNS Queries (If Present)
+============================================================
+
+Query:
+index=* SERVFAIL
+
+Use:
+Finds failed DNS resolution attempts.
+
+Purpose:
+Used to detect DNS issues or suspicious lookups.
+
+------------------------------------------------------------
+
+============================================================
+14. Search NXDOMAIN (Non-existent Domains)
+============================================================
+
+Query:
+index=* NXDOMAIN
+
+Use:
+Finds domains that do not exist.
+
+Purpose:
+Useful for malware DGA detection or typo traffic.
+
+------------------------------------------------------------
+
+============================================================
+15. Detect High Query Volume by Single Domain
+============================================================
+
+Query:
+index=* "query:" | rex field=_raw "query:\s(?<domain>[^\s]+)" | stats count by domain | sort - count
+
+Use:
+Lists domains by highest query count.
+
+Purpose:
+Used to detect beaconing or excessive lookups.
+
+------------------------------------------------------------
+
+============================================================
+16. DNS Queries from Localhost
+============================================================
+
+Query:
+index=* "127.0.0.1"
+
+Use:
+Finds queries originating from localhost.
+
+Purpose:
+Useful in your lab because nslookup used 127.0.0.1 DNS server.
+
+------------------------------------------------------------
+
+============================================================
+17. Raw DNS Logs from Source File
+============================================================
+
+Query:
+source="/var/cache/bind/query.log"
+
+Use:
+Displays only events from actual DNS log file.
+
+Purpose:
+Used to isolate DNS logs from all other system logs.
+
+------------------------------------------------------------
+
+============================================================
+18. Daily DNS Count
+============================================================
+
+Query:
+index=* "query:" | timechart span=1d count
+
+Use:
+Shows DNS event count per day.
+
+Purpose:
+Used for long-term traffic monitoring.
+
+------------------------------------------------------------
+
+============================================================
+19. Most Active Source IP + Domain
+============================================================
+
+Query:
+index=* "query:" | rex field=_raw "client\s@\S+\s(?<src_ip>[0-9.]+)#" | rex field=_raw "query:\s(?<domain>[^\s]+)" | stats count by src_ip domain
+
+Use:
+Maps source IP to queried domains.
+
+Purpose:
+Useful for investigation.
+
+------------------------------------------------------------
+
+============================================================
+20. Dashboard Base Search
+============================================================
+
+Query:
+index=* "query:"
+
+Use:
+Base query for charts, tables, alerts.
+
+Purpose:
+Used to build Splunk dashboards for DNS monitoring.
+
+------------------------------------------------------------
